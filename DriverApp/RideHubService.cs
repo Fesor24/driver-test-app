@@ -89,7 +89,7 @@ public sealed class RideHubService : IDisposable
             Console.WriteLine("Chats received");
             foreach (var chat in request.Chats)
             {
-                Console.WriteLine($"{chat.Sender} to {chat.Recipient}: {chat.Message}");
+                Console.WriteLine($"{chat.Sender}: {chat.Message}");
             }
 
             Console.ForegroundColor = ConsoleColor.White;
