@@ -31,10 +31,10 @@ public sealed class RideHubService : IDisposable
         SubscribeToRideUpdates();
         SubscribeToRideRequest();
 
-        StartAsync().SafeFireAndForget<Exception>(ex => Console.WriteLine($"An error occurred. {ex.Message}"));
+        //StartAsync().SafeFireAndForget<Exception>(ex => Console.WriteLine($"An error occurred. {ex.Message}"));
     }
 
-    private async Task StartAsync() => await _rideHub.StartAsync();
+    public async Task StartAsync() => await _rideHub.StartAsync();
 
     public Task UpdateLocation(Location location)
     {

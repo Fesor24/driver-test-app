@@ -22,6 +22,8 @@ if (!double.TryParse(Console.ReadLine(), out double longitude)) longitude = 0;
 
 using var rideHubService = new RideHubService(baseUrl, accessToken);
 
+await rideHubService.StartAsync();
+
 Task locationTask = UpdateLocation();
 
 Task chatTask = Chat();
