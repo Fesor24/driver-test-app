@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using AsyncAwaitBestPractices;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,19 +30,21 @@ public sealed class RideHubService : IDisposable
         SubscribeToChatRequestUpdates();
         SubscribeToRideUpdates();
         SubscribeToRideRequest();
+
+        StartAsync().SafeFireAndForget<Exception>(ex => Console.WriteLine($"An error occurred. {ex.Message}"));
     }
 
-    public async Task StartAsync() => await _rideHub.StartAsync();
+    private async Task StartAsync() => await _rideHub.StartAsync();
 
-    public async Task UpdateLocation(Location location)
+    public Task UpdateLocation(Location location)
     {
-        await _rideHub.InvokeAsync("UpdateLocation", location, CancellationToken.None);
-        Console.WriteLine("Driver Location updated");
+        Console.WriteLine("<--Driver Location updated-->");
+        return _rideHub.InvokeAsync("UpdateLocation", location, CancellationToken.None);
     }
 
-    public async Task Chat(string message)
+    public Task Chat(string message)
     {
-        if (_rideId == default) return;
+        if (_rideId == default) return Task.CompletedTask;
 
         SendChatMessage rideChat = new()
         {
@@ -49,7 +52,7 @@ public sealed class RideHubService : IDisposable
             Message = message
         };
 
-        await _rideHub.InvokeAsync("Chat", rideChat, CancellationToken.None);
+        return _rideHub.InvokeAsync("Chat", rideChat, CancellationToken.None);
     }
 
     private void SubscribeToRideRequest()
@@ -67,8 +70,6 @@ public sealed class RideHubService : IDisposable
             Console.WriteLine("Waypoints addresses: ");
 
             _rideId = request.RideId;
-
-            Console.WriteLine($"Ride id is {request.RideId}");
 
             int count = 1;
             foreach (var item in request.Waypoints)
@@ -113,7 +114,7 @@ public sealed class RideHubService : IDisposable
 
     private void Close()
     {
-        _rideHub.StopAsync();
+        _rideHub.StopAsync().SafeFireAndForget();
     }
 
     public void Dispose()
