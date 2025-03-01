@@ -1,15 +1,40 @@
-﻿
+﻿using System.Text.Json;
 using DriverApp;
 
 Console.WriteLine("Driver App!!!");
 
 string baseUrl = "https://stagingapi.soloride.app";
 
-Console.WriteLine("Paste drivers access token below: ");
-string? accessToken = Console.ReadLine();
+string filePath = "token.txt";
 
-while(string.IsNullOrWhiteSpace(accessToken))
-    accessToken = Console.ReadLine();
+string fileContent;
+
+string accessToken;
+
+try
+{
+    using var streamReader = new StreamReader(filePath);
+
+    fileContent = streamReader.ReadToEnd();
+}
+catch(FileNotFoundException)
+{
+    fileContent = string.Empty;
+}
+
+Console.WriteLine("Enter 'y' to use cached data or 'n' to paste new token? [y/n]");
+
+string response = Console.ReadLine();
+
+if(response == "y")
+{
+    accessToken = await GetOrUpdateTokenIfExpired(fileContent, filePath);
+}
+else
+{
+    accessToken = GetToken();
+    await SaveToken(accessToken, filePath);
+}
 
 Console.Clear();
 
@@ -59,3 +84,64 @@ async Task UpdateLocation()
         await Task.Delay(4000);
     }
 }
+
+string GetToken()
+{
+    Console.WriteLine("Paste drivers access token below: ");
+    string? accessToken = Console.ReadLine();
+
+    while (string.IsNullOrWhiteSpace(accessToken))
+        accessToken = Console.ReadLine();
+
+    return accessToken;
+}
+
+async Task<string> GetOrUpdateTokenIfExpired(string content, string path)
+{
+    string? accessToken;
+
+    if (string.IsNullOrWhiteSpace(content))
+    {
+        Console.WriteLine("No saved data");
+        accessToken = GetToken();
+
+        content = JsonSerializer.Serialize(new CachedData(accessToken, DateTime.UtcNow.AddHours(4)));
+
+        using var streamWriter = new StreamWriter(path);
+
+        await streamWriter.WriteLineAsync(content);
+    }
+    else
+    {
+        var cachedData = JsonSerializer.Deserialize<CachedData>(content);
+
+        if (cachedData is null || cachedData.Expiry <= DateTime.UtcNow)
+        {
+            Console.WriteLine("Token expired");
+            accessToken = GetToken();
+
+            content = JsonSerializer.Serialize(new CachedData(accessToken, DateTime.UtcNow.AddHours(4)));
+
+            using var streamWriter = new StreamWriter(path);
+
+            await streamWriter.WriteLineAsync(content);
+        }
+        else
+        {
+            accessToken = cachedData.AccessToken;
+        }
+    }
+
+    return accessToken;
+}
+
+async Task SaveToken(string accessToken, string path)
+{
+    string content = JsonSerializer.Serialize(new CachedData(accessToken, DateTime.UtcNow.AddHours(4)));
+
+    using var streamWriter = new StreamWriter(path);
+
+    await streamWriter.WriteLineAsync(content);
+}
+
+sealed record CachedData(string AccessToken, DateTime Expiry);
