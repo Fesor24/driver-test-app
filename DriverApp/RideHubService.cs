@@ -109,6 +109,17 @@ public sealed class RideHubService : IDisposable
                 Console.WriteLine(data.Message);
                 Console.ForegroundColor = ConsoleColor.White;
             }
+
+            if (request.Update == ReceiveRideUpdate.RequestWaitTimeExtension)
+            {
+                var data = JsonSerializer.Deserialize<RequestWaitTimeExtension>(request.Data) ?? new();
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(data.Message);
+                Console.WriteLine($"Extension amount: {data.Amount}");
+                Console.WriteLine($"Wait time Id is: {data.WaitTimeId}");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
         });
     }
 

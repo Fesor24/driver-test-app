@@ -3,7 +3,8 @@ using DriverApp;
 
 Console.WriteLine("Driver App!!!");
 
-string baseUrl = "https://stagingapi.soloride.app";
+string devUrl = "https://localhost:7175";
+string stagingUrl = "https://stagingapi.soloride.app";
 
 string filePath = "token.txt";
 
@@ -38,6 +39,19 @@ else
 
 Console.Clear();
 
+Console.WriteLine("Which env are you working with?");
+Console.WriteLine("1. dev");
+Console.WriteLine("2. staging");
+Console.WriteLine("Default 'env' is staging");
+string env = Console.ReadLine() ?? "";
+
+string url = stagingUrl;
+
+if (env.Equals("dev", StringComparison.OrdinalIgnoreCase))
+    url = devUrl;
+
+Console.Clear();
+
 Console.WriteLine("To update your current location. Input location information below:");
 Console.WriteLine("Your Latitude: ");
 if (!double.TryParse(Console.ReadLine(), out double lat)) lat = 0;
@@ -45,7 +59,9 @@ if (!double.TryParse(Console.ReadLine(), out double lat)) lat = 0;
 Console.WriteLine("Your Longitude: ");
 if (!double.TryParse(Console.ReadLine(), out double longitude)) longitude = 0;
 
-using var rideHubService = new RideHubService(baseUrl, accessToken);
+Console.Clear();
+
+using var rideHubService = new RideHubService(url, accessToken);
 
 await rideHubService.StartAsync();
 
@@ -105,7 +121,7 @@ async Task<string> GetOrUpdateTokenIfExpired(string content, string path)
         Console.WriteLine("No saved data");
         accessToken = GetToken();
 
-        content = JsonSerializer.Serialize(new CachedData(accessToken, DateTime.UtcNow.AddHours(4)));
+        content = JsonSerializer.Serialize(new CachedData(accessToken, DateTime.UtcNow.AddHours(14)));
 
         using var streamWriter = new StreamWriter(path);
 
@@ -120,7 +136,7 @@ async Task<string> GetOrUpdateTokenIfExpired(string content, string path)
             Console.WriteLine("Token expired");
             accessToken = GetToken();
 
-            content = JsonSerializer.Serialize(new CachedData(accessToken, DateTime.UtcNow.AddHours(4)));
+            content = JsonSerializer.Serialize(new CachedData(accessToken, DateTime.UtcNow.AddHours(14)));
 
             using var streamWriter = new StreamWriter(path);
 
@@ -137,7 +153,7 @@ async Task<string> GetOrUpdateTokenIfExpired(string content, string path)
 
 async Task SaveToken(string accessToken, string path)
 {
-    string content = JsonSerializer.Serialize(new CachedData(accessToken, DateTime.UtcNow.AddHours(4)));
+    string content = JsonSerializer.Serialize(new CachedData(accessToken, DateTime.UtcNow.AddHours(14)));
 
     using var streamWriter = new StreamWriter(path);
 
