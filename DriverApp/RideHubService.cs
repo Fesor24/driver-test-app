@@ -30,9 +30,12 @@ public sealed class RideHubService : IDisposable
         SubscribeToChatRequestUpdates();
         SubscribeToRideUpdates();
         SubscribeToRideRequest();
+        SubscribeToCallNotification();
 
         //StartAsync().SafeFireAndForget<Exception>(ex => Console.WriteLine($"An error occurred. {ex.Message}"));
     }
+
+    public long RideId => _rideId;
 
     public async Task StartAsync() => await _rideHub.StartAsync();
 
@@ -120,6 +123,19 @@ public sealed class RideHubService : IDisposable
                 Console.WriteLine($"Wait time Id is: {data.WaitTimeId}");
                 Console.ForegroundColor = ConsoleColor.White;
             }
+        });
+    }
+
+    private void SubscribeToCallNotification()
+    {
+        _rideHub.On<CallNotification>("ReceiveCallNotification", (request) =>
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Nearby driver location update:");
+            Console.WriteLine($"Caller: {request.CallerInfo.Caller}");
+            Console.WriteLine($"Caller name: {request.CallerInfo.Name}");
+            Console.WriteLine($"Caller image: {request.CallerInfo.ProfileImage}");
+            Console.ForegroundColor = ConsoleColor.White;
         });
     }
 

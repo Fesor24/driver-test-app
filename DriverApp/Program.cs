@@ -12,6 +12,18 @@ string fileContent;
 
 string accessToken;
 
+double[,] tripLocationUpdate = new double[8, 2]
+{
+    { 6.575741, 3.369956 },
+    { 6.575613, 3.369870 },
+    { 6.575187, 3.369548 },
+    { 6.574931, 3.369291 },
+    { 6.575187, 3.369012 },
+    { 6.575421, 3.368540 },
+    { 6.575720, 3.368089 },
+    { 6.576658, 3.368046 }
+};
+
 try
 {
     using var streamReader = new StreamReader(filePath);
@@ -91,6 +103,35 @@ async Task UpdateLocation()
 {
     while (true)
     {
+        //if(rideHubService.RideId != default)
+        //{
+        //    int locationCount = tripLocationUpdate.GetLength(0);
+
+        //    for(int i = 0; i < locationCount; i++)
+        //    {
+        //        await rideHubService.UpdateLocation(new Location
+        //        {
+        //            Longitude = tripLocationUpdate[i, 1],
+        //            Latitude = tripLocationUpdate[i, 0]
+        //        });
+
+        //        await Task.Delay(5000);
+
+        //        if (i == locationCount - 1)
+        //            i = 0;
+        //    }
+
+        //}
+        //else
+        //{
+        //    await rideHubService.UpdateLocation(new Location
+        //    {
+        //        Longitude = longitude,
+        //        Latitude = lat
+        //    });
+        //}
+
+
         await rideHubService.UpdateLocation(new Location
         {
             Longitude = longitude,
